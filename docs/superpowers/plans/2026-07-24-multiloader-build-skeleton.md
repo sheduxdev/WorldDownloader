@@ -15,9 +15,9 @@
 - Zero dependency on Essential loader or Elementa (no `gg.essential:*`).
 - Two version buckets. Legacy: 1.7.10, 1.8.9, 1.12.2 (Forge + Legacy Fabric). Modern: 1.16.5, 1.18.2, 1.20.1, 1.21.1, 26.1, 26.2-newest (Forge, Fabric, NeoForge, Quilt where each exists).
 - A is skeleton only: NO world/schematic/litematic download logic, NO real UI styling, NO active anti-fingerprint code.
-- A's build proof is exactly three anchors: `1.8.9-forge`, `1.20.1-fabric`, `26.2-neoforge`.
+- **Full coverage target:** EVERY MC version from 1.7.10 through 26.2 (all point releases), on EVERY loader that exists for that version (Forge, Legacy Fabric, Fabric, Quilt, NeoForge — per the availability windows in Task 1). ~280 (version×loader) rows, generated not hand-typed. No loader is built for a version where that loader does not exist (impossible, not skipped).
+- A's build proof is exactly three rows: `1.8.9-forge`, `1.20.1-fabric`, `26.2-neoforge`. The remaining ~277 rows are declared in the matrix but `build=false` in A; they flip to `build=true` per version once the 3-anchor toolchain is proven. Building them all out is the ongoing work after A, not part of A.
 - The empty panel must be reachable by BOTH a `/wdl` client command AND a rebindable key binding.
-- Remaining anchors (1.7.10, 1.12.2, 1.16.5, 1.18.2, 1.20.1→1.21.1 range, 26.1, Quilt) are declared as matrix rows only — not required to build in A.
 - Modern anchors use **latest stable** tooling. Confirmed for MC 26.2 (newest release, June 2026): **Gradle 9.5.1, Architectury/Fabric Loom 1.17, Fabric Loader 0.19.3**, latest Kotlin. Confirm each against the reference templates at build time.
 - Minecraft switched to **year-based versioning in 2026**: 26.1 (Mar), **26.2 "Chaos Cubed" (newest)**, 26.3 in dev. The matrix has **no fixed ceiling** — every new release is a new row, never a rewrite; the newest modern anchor tracks the latest release (currently 26.2).
 - **Toolchain conflict (known, unresolved in A):** legacy 1.8.9 uses ForgeGradle 2, incompatible with Gradle 9.x; modern (26.2) needs Gradle 9.5.1. A single shared wrapper cannot satisfy both. Accept the two-toolchain split — the legacy anchor uses its own Gradle (ForgeGradle-2-compatible, ~Gradle 4–5 or the debuggingss fork's max), the modern anchors use 9.5.1. Do NOT force one version across both buckets.
@@ -60,29 +60,51 @@ Modern anchors need Gradle 9.5.1 (MC 26.2 / Loom 1.17 requirement). If no system
 
 - [ ] **Step 2: Write the version matrix**
 
+Full coverage: EVERY listed MC version, on EVERY loader that exists for it. The matrix is
+**generated** from the ordered version list + per-loader availability windows — never hand-typed.
 `worlddownloader-mc/versions.gradle.kts`:
 ```kotlin
-// Source of truth for the anchor matrix. `build = true` rows are wired subprojects;
-// `build = false` rows are declared for later sub-projects (not built in A).
-data class Anchor(val id: String, val mc: String, val loader: String, val build: Boolean)
-
-val anchors = listOf(
-    // legacy bucket
-    Anchor("1.7.10-forge",  "1.7.10", "forge",        false),
-    Anchor("1.8.9-forge",   "1.8.9",  "forge",        true),
-    Anchor("1.12.2-forge",  "1.12.2", "forge",        false),
-    // modern bucket (year-versioning from 2026)
-    Anchor("1.16.5-forge",   "1.16.5", "forge",    false),
-    Anchor("1.18.2-fabric",  "1.18.2", "fabric",   false),
-    Anchor("1.20.1-fabric",  "1.20.1", "fabric",   true),
-    Anchor("1.21.1-neoforge","1.21.1", "neoforge", false),
-    Anchor("1.21.1-quilt",   "1.21.1", "quilt",    false),
-    Anchor("26.1-fabric",    "26.1",   "fabric",   false),
-    Anchor("26.2-neoforge",  "26.2",   "neoforge", true),  // newest, A build proof
-    Anchor("26.2-fabric",    "26.2",   "fabric",   false),
-    Anchor("26.2-quilt",     "26.2",   "quilt",    false),
+// Ordered list of ALL target MC versions (index = chronological order). Add new releases at the end.
+val allVersions = listOf(
+    "1.7.10",
+    "1.8","1.8.1","1.8.2","1.8.3","1.8.4","1.8.5","1.8.6","1.8.7","1.8.8","1.8.9",
+    "1.9","1.9.1","1.9.2","1.9.3","1.9.4",
+    "1.10","1.10.1","1.10.2","1.11","1.11.1","1.11.2","1.12","1.12.1","1.12.2",
+    "1.13","1.13.1","1.13.2",
+    "1.14","1.14.1","1.14.2","1.14.3","1.14.4","1.15","1.15.1","1.15.2",
+    "1.16","1.16.1","1.16.2","1.16.3","1.16.4","1.16.5","1.17","1.17.1",
+    "1.18","1.18.1","1.18.2","1.19","1.19.1","1.19.2","1.19.3","1.19.4",
+    "1.20","1.20.1","1.20.2","1.20.3","1.20.4","1.20.5","1.20.6",
+    "1.21","1.21.1","1.21.2","1.21.3","1.21.4","1.21.5","1.21.6","1.21.7","1.21.8","1.21.9","1.21.10","1.21.11",
+    "26.1","26.1.1","26.1.2","26.2",
 )
+fun idx(v: String) = allVersions.indexOf(v).also { require(it >= 0) { "unknown version $v" } }
+
+// Loader availability windows (inclusive), verified against each loader's release history:
+//   forge        : all versions (1.7.10..latest); 26.x Forge unconfirmed -> NeoForge covers 26.x
+//   legacyfabric : 1.7.10 .. 1.13.2   (pre-official-Fabric)
+//   fabric       : 1.14   .. latest
+//   quilt        : 1.18.2 .. latest
+//   neoforge     : 1.20.2 .. latest
+fun loadersFor(v: String): List<String> {
+    val i = idx(v)
+    val out = mutableListOf<String>()
+    if (i <= idx("1.21.11")) out += "forge"          // Forge across 1.7.10..1.21.x
+    if (i <= idx("1.13.2"))  out += "legacyfabric"
+    if (i >= idx("1.14"))    out += "fabric"
+    if (i >= idx("1.18.2"))  out += "quilt"
+    if (i >= idx("1.20.2"))  out += "neoforge"
+    return out
+}
+
+// Every valid (version, loader) pair = a matrix row. Only the 3 proof ids build in A.
+data class Anchor(val id: String, val mc: String, val loader: String, val build: Boolean)
+val proofIds = setOf("1.8.9-forge", "1.20.1-fabric", "26.2-neoforge")
+val anchors: List<Anchor> = allVersions.flatMap { v ->
+    loadersFor(v).map { l -> val id = "$v-$l"; Anchor(id, v, l, id in proofIds) }
+}
 extra["anchors"] = anchors
+// -> ~280 declared rows; 3 build=true in A. Flip build=true per version as the toolchain is proven.
 ```
 
 - [ ] **Step 3: Register only the buildable subprojects in settings**
@@ -612,7 +634,15 @@ Locks in the remaining anchors as declared-not-built rows and writes the one doc
 
 - [ ] **Step 1: Verify the matrix is complete**
 
-Confirm `versions.gradle.kts` contains all rows from the Global Constraints (1.7.10, 1.8.9, 1.12.2, 1.16.5, 1.18.2, 1.20.1, 1.21.1, 26.1, 26.2, plus quilt rows). Add any missing row using the same `Anchor(...)` shape with `build = false`.
+Verify `versions.gradle.kts` `allVersions` lists every MC release 1.7.10 → 26.2 in order, and `loadersFor` windows match the availability table (Legacy Fabric ≤1.13.2, Fabric ≥1.14, Quilt ≥1.18.2, NeoForge ≥1.20.2, Forge ≤1.21.x). Add a quick sanity task that prints `anchors.size` (~280) and asserts the 3 proof ids are `build=true`:
+```kotlin
+tasks.register("matrixCheck") {
+    doLast {
+        @Suppress("UNCHECKED_CAST") val a = extra["anchors"] as List<Any>
+        println("matrix rows: ${a.size}")
+    }
+}
+```
 
 - [ ] **Step 2: Write the skeleton README**
 

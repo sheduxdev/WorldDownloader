@@ -29,10 +29,14 @@ The full effort is decomposed into five sub-projects, each with its own spec →
 - **Package root:** `dev.shedux.worlddownloader`
 - **Language:** 100% Kotlin. Mixin allowed for MC hooks (Java-annotated mixins permitted).
 - **No Essential / Elementa.** Zero dependency on Essential loader or its UI stack.
-- **Two version buckets:**
-  - **Legacy:** 1.7.10, 1.8.9, 1.12.2 — loaders: Forge + Legacy Fabric.
-  - **Modern:** 1.16.5, 1.18.2, 1.20.1, 1.21.1, 26.1, **26.2 (newest)** — loaders: Forge, Fabric,
-    NeoForge, Quilt (each where it exists: NeoForge only 1.20.2+; Quilt modern only).
+- **Full coverage:** every MC version 1.7.10 → 26.2 (all point releases), each on every loader that
+  exists for it. Two toolchain buckets:
+  - **Legacy** (ForgeGradle 2): 1.7.10 → 1.13.2 — Forge; Legacy Fabric (1.7.10 → 1.13.2).
+  - **Modern** (Architectury Loom): 1.14 → 26.2 — Forge (→1.21.x), Fabric (1.14+), Quilt (1.18.2+),
+    NeoForge (1.20.2+).
+  - Matrix is **generated** from an ordered version list + per-loader availability windows (~280
+    version×loader rows), never hand-typed. Impossible combos (Fabric on 1.7.10, NeoForge on
+    1.16.5, …) are simply not emitted.
 - Matrix is **extensible** — new MC releases are added as rows, not rewrites. Minecraft moved to
   **year-based versioning in 2026**: 26.1 (Mar), 26.2 "Chaos Cubed" (Jun, newest), 26.3 in dev.
   The user's target is "up to 26.2"; the newest modern anchor tracks the latest release. Confirmed
