@@ -13,11 +13,14 @@
 - Package root is exactly `dev.shedux.worlddownloader`. No `dev.desco.*`.
 - 100% Kotlin for mod logic. Java is allowed only for Mixin classes.
 - Zero dependency on Essential loader or Elementa (no `gg.essential:*`).
-- Two version buckets. Legacy: 1.7.10, 1.8.9, 1.12.2 (Forge + Legacy Fabric). Modern: 1.16.5, 1.18.2, 1.20.1, 1.21.x (Forge, Fabric, NeoForge, Quilt where each exists).
+- Two version buckets. Legacy: 1.7.10, 1.8.9, 1.12.2 (Forge + Legacy Fabric). Modern: 1.16.5, 1.18.2, 1.20.1, 1.21.1, 26.1, 26.2-newest (Forge, Fabric, NeoForge, Quilt where each exists).
 - A is skeleton only: NO world/schematic/litematic download logic, NO real UI styling, NO active anti-fingerprint code.
-- A's build proof is exactly three anchors: `1.8.9-forge`, `1.20.1-fabric`, `1.21.x-neoforge`.
+- A's build proof is exactly three anchors: `1.8.9-forge`, `1.20.1-fabric`, `26.2-neoforge`.
 - The empty panel must be reachable by BOTH a `/wdl` client command AND a rebindable key binding.
-- Remaining anchors (1.7.10, 1.12.2, 1.16.5, 1.18.2, Quilt) are declared as matrix rows only — not required to build in A.
+- Remaining anchors (1.7.10, 1.12.2, 1.16.5, 1.18.2, 1.20.1→1.21.1 range, 26.1, Quilt) are declared as matrix rows only — not required to build in A.
+- Modern anchors use **latest stable** tooling. Confirmed for MC 26.2 (newest release, June 2026): **Gradle 9.5.1, Architectury/Fabric Loom 1.17, Fabric Loader 0.19.3**, latest Kotlin. Confirm each against the reference templates at build time.
+- Minecraft switched to **year-based versioning in 2026**: 26.1 (Mar), **26.2 "Chaos Cubed" (newest)**, 26.3 in dev. The matrix has **no fixed ceiling** — every new release is a new row, never a rewrite; the newest modern anchor tracks the latest release (currently 26.2).
+- **Toolchain conflict (known, unresolved in A):** legacy 1.8.9 uses ForgeGradle 2, incompatible with Gradle 9.x; modern (26.2) needs Gradle 9.5.1. A single shared wrapper cannot satisfy both. Accept the two-toolchain split — the legacy anchor uses its own Gradle (ForgeGradle-2-compatible, ~Gradle 4–5 or the debuggingss fork's max), the modern anchors use 9.5.1. Do NOT force one version across both buckets.
 
 ## Reference templates (mirror these — do not invent the DSL)
 
@@ -43,7 +46,7 @@ When a step below prints a coordinate (loader/loom/yarn version), confirm it aga
 - Create: `worlddownloader-mc/.gitignore`
 
 **Interfaces:**
-- Produces: a Gradle root project named `worlddownloader-mc` with three empty subprojects registered — `1.8.9-forge`, `1.20.1-fabric`, `1.21.1-neoforge` — plus a `versions.gradle.kts` map listing every matrix row (buildable flag per row).
+- Produces: a Gradle root project named `worlddownloader-mc` with three empty subprojects registered — `1.8.9-forge`, `1.20.1-fabric`, `26.2-neoforge` — plus a `versions.gradle.kts` map listing every matrix row (buildable flag per row).
 
 - [ ] **Step 1: Create the Gradle wrapper**
 
@@ -51,9 +54,9 @@ Run from repo root:
 ```bash
 cd "c:/Users/ddeni/Desktop/sheduxdev/WorldDownloader"
 mkdir -p worlddownloader-mc && cd worlddownloader-mc
-gradle wrapper --gradle-version 8.9
+gradle wrapper --gradle-version 9.5.1
 ```
-(If no system `gradle`, copy `gradle/` + `gradlew*` from the ReplayMod repo and set version 8.9 in `gradle-wrapper.properties`.)
+Modern anchors need Gradle 9.5.1 (MC 26.2 / Loom 1.17 requirement). If no system `gradle`, copy `gradle/` + `gradlew*` from a current template and set version 9.5.1 in `gradle-wrapper.properties`. NOTE: the 1.8.9-forge anchor (Task 3, ForgeGradle 2) will NOT run under Gradle 9 — per Global Constraints it gets its own Gradle wrapper (nested build or separate invocation); this root wrapper drives the modern anchors.
 
 - [ ] **Step 2: Write the version matrix**
 
@@ -68,12 +71,16 @@ val anchors = listOf(
     Anchor("1.7.10-forge",  "1.7.10", "forge",        false),
     Anchor("1.8.9-forge",   "1.8.9",  "forge",        true),
     Anchor("1.12.2-forge",  "1.12.2", "forge",        false),
-    // modern bucket
-    Anchor("1.16.5-forge",  "1.16.5", "forge",        false),
-    Anchor("1.18.2-fabric", "1.18.2", "fabric",       false),
-    Anchor("1.20.1-fabric", "1.20.1", "fabric",       true),
-    Anchor("1.21.1-neoforge","1.21.1","neoforge",     true),
-    Anchor("1.21.1-quilt",  "1.21.1", "quilt",        false),
+    // modern bucket (year-versioning from 2026)
+    Anchor("1.16.5-forge",   "1.16.5", "forge",    false),
+    Anchor("1.18.2-fabric",  "1.18.2", "fabric",   false),
+    Anchor("1.20.1-fabric",  "1.20.1", "fabric",   true),
+    Anchor("1.21.1-neoforge","1.21.1", "neoforge", false),
+    Anchor("1.21.1-quilt",   "1.21.1", "quilt",    false),
+    Anchor("26.1-fabric",    "26.1",   "fabric",   false),
+    Anchor("26.2-neoforge",  "26.2",   "neoforge", true),  // newest, A build proof
+    Anchor("26.2-fabric",    "26.2",   "fabric",   false),
+    Anchor("26.2-quilt",     "26.2",   "quilt",    false),
 )
 extra["anchors"] = anchors
 ```
@@ -88,7 +95,7 @@ apply(from = "versions.gradle.kts")
 @Suppress("UNCHECKED_CAST")
 val anchors = extra["anchors"] as List<*>
 // include only build=true rows in A
-listOf("1.8.9-forge", "1.20.1-fabric", "1.21.1-neoforge").forEach { id ->
+listOf("1.8.9-forge", "1.20.1-fabric", "26.2-neoforge").forEach { id ->
     include(":$id")
     project(":$id").projectDir = file("versions/$id")
 }
@@ -100,7 +107,7 @@ listOf("1.8.9-forge", "1.20.1-fabric", "1.21.1-neoforge").forEach { id ->
 ```kotlin
 // Root is config-only; each anchor build lives under versions/<id>/.
 tasks.register("anchors") {
-    doLast { println("Buildable anchors: 1.8.9-forge, 1.20.1-fabric, 1.21.1-neoforge") }
+    doLast { println("Buildable anchors: 1.8.9-forge, 1.20.1-fabric, 26.2-neoforge") }
 }
 ```
 `worlddownloader-mc/gradle.properties`:
@@ -124,7 +131,7 @@ Run:
 ```bash
 cd worlddownloader-mc && ./gradlew projects
 ```
-Expected: BUILD SUCCESSFUL, and the printed tree lists `+--- Project ':1.8.9-forge'`, `':1.20.1-fabric'`, `':1.21.1-neoforge'`. (The `versions/<id>` dirs are empty for now — Gradle tolerates missing build files only if the projects have none; if it errors on missing build script, create empty `versions/<id>/build.gradle.kts` files.)
+Expected: BUILD SUCCESSFUL, and the printed tree lists `+--- Project ':1.8.9-forge'`, `':1.20.1-fabric'`, `':26.2-neoforge'`. (The `versions/<id>` dirs are empty for now — Gradle tolerates missing build files only if the projects have none; if it errors on missing build script, create empty `versions/<id>/build.gradle.kts` files.)
 
 - [ ] **Step 6: Commit**
 
@@ -488,42 +495,44 @@ git commit -m "refactor(mc): unify anchor source under ReplayMod preprocessor"
 
 ---
 
-### Task 5: Add the NeoForge anchor — `1.21.1-neoforge`
+### Task 5: Add the newest NeoForge anchor — `26.2-neoforge`
 
-Third and final build proof: a modern non-Fabric loader, driven from the same shared source.
+Third and final build proof: the newest release (MC 26.2, year-versioned) on a modern non-Fabric loader, driven from the same shared source. This directly proves the user's "up to 26.2" target.
 
 **Files:**
-- Create: `worlddownloader-mc/versions/1.21.1-neoforge/build.gradle.kts`
-- Create: `worlddownloader-mc/versions/1.21.1-neoforge/src/main/resources/META-INF/neoforge.mods.toml`
-- Modify: `worlddownloader-mc/settings.gradle.kts` (add `1.21.1-neoforge` node to the preprocessor graph)
+- Create: `worlddownloader-mc/versions/26.2-neoforge/build.gradle.kts`
+- Create: `worlddownloader-mc/versions/26.2-neoforge/src/main/resources/META-INF/neoforge.mods.toml`
+- Modify: `worlddownloader-mc/settings.gradle.kts` (add `26.2-neoforge` node to the preprocessor graph)
 - Modify: `src/main/kotlin/dev/shedux/worlddownloader/WorldDownloaderMod.kt` (add NeoForge branch guards)
 
 **Interfaces:**
 - Consumes: the shared `src/` and preprocessor graph from Task 4.
-- Produces: a third buildable anchor whose entrypoint opens `EmptyPanelScreen` via `/wdl` and a rebindable key, using NeoForge 1.21.1 APIs.
+- Produces: a third buildable anchor whose entrypoint opens `EmptyPanelScreen` via `/wdl` and a rebindable key, using NeoForge for MC 26.2 APIs.
+
+**Preprocessor version-code note:** the ReplayMod preprocessor keys versions by a numeric `mcVersion` code (e.g. `1.20.1`→`11605`-style). Year-versioning (26.2) breaks the old 1.x scheme — use the code convention from the CURRENT preprocessor release (which supports 26.x), and define 26.2's code in the graph (Task 4 Step 1). Guard 26.2-only source with that code, e.g. `//#if MC>=<26.2-code>`.
 
 - [ ] **Step 1: Write the NeoForge build script**
 
-Mirror the Architectury Loom NeoForge template. `versions/1.21.1-neoforge/build.gradle.kts`:
+Mirror the Architectury Loom NeoForge template, at latest coordinates for 26.2. `versions/26.2-neoforge/build.gradle.kts`:
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.0.0"
-    id("dev.architectury.loom") version "1.7.+"
+    kotlin("jvm") version "2.0.20"        // latest stable Kotlin
+    id("dev.architectury.loom") version "1.17.+"   // 26.2 requires Loom 1.17
 }
 loom { }
 dependencies {
-    minecraft("com.mojang:minecraft:1.21.1")
+    minecraft("com.mojang:minecraft:26.2")
     mappings(loom.officialMojangMappings())
-    neoForge("net.neoforged:neoforge:21.1.72")
-    // Kotlin for NeoForge via Kotlin-for-Forge:
-    implementation("thedarkcolour:kotlinforforge-neoforge:5.5.0")
+    neoForge("net.neoforged:neoforge:<26.2-neoforge-version>")   // confirm current NeoForge build for 26.2
+    // Kotlin for NeoForge via Kotlin-for-Forge (latest for 26.2):
+    implementation("thedarkcolour:kotlinforforge-neoforge:<latest>")
 }
-// Confirm neoforge + kotlinforforge versions against their current releases before first build.
+// Requires Gradle 9.5.1 (root wrapper). Confirm neoforge + kotlinforforge versions against their 26.2 releases before first build.
 ```
 
 - [ ] **Step 2: Write the NeoForge mod metadata**
 
-`versions/1.21.1-neoforge/src/main/resources/META-INF/neoforge.mods.toml`:
+`versions/26.2-neoforge/src/main/resources/META-INF/neoforge.mods.toml`:
 ```toml
 modLoader = "kotlinforforge"
 loaderVersion = "[5,)"
@@ -535,16 +544,16 @@ displayName = "WorldDownloader"
 [[dependencies.worlddownloader]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.1,)"
+versionRange = "[26.2,)"
 side = "CLIENT"
 ```
 
 - [ ] **Step 3: Add the NeoForge branch to shared source**
 
-In `src/main/kotlin/dev/shedux/worlddownloader/WorldDownloaderMod.kt`, split the modern branch by loader. The preprocessor supports loader-token guards in addition to MC version (README: e.g. `//#if FABRIC` / `//#if NEOFORGE`). Under `//#if MC>=12100 && NEOFORGE`, register via NeoForge: a `@Mod` object using `RegisterClientCommandsEvent` for `/wdl` and `RegisterKeyMappingsEvent` for the keybind, both opening `EmptyPanelScreen`. Keep the Fabric branch under `//#if FABRIC`. Write the full NeoForge body inline (no placeholder):
+In `src/main/kotlin/dev/shedux/worlddownloader/WorldDownloaderMod.kt`, split the modern branch by loader. The preprocessor supports loader-token guards in addition to MC version (README: e.g. `//#if FABRIC` / `//#if NEOFORGE`). Under `//#if NEOFORGE`, register via NeoForge: a `@Mod` object using `RegisterClientCommandsEvent` for `/wdl` and `RegisterKeyMappingsEvent` for the keybind, both opening `EmptyPanelScreen`. Keep the Fabric branch under `//#if FABRIC`. Write the full NeoForge body inline (no placeholder):
 ```kotlin
 //#if NEOFORGE
-//$$ // NeoForge 1.21.1 entrypoint
+//$$ // NeoForge 26.2 entrypoint
 //$$ import net.neoforged.fml.common.Mod
 //$$ import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
 //$$ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
@@ -568,18 +577,23 @@ In `src/main/kotlin/dev/shedux/worlddownloader/WorldDownloaderMod.kt`, split the
 
 - [ ] **Step 4: Add the anchor to settings + graph, then build (the test)**
 
-Add `include(":1.21.1-neoforge")` and its node to the preprocessor graph in `settings.gradle.kts`. Run:
+Add `include(":26.2-neoforge")` and its node to the preprocessor graph in `settings.gradle.kts`. Run:
 ```bash
-cd worlddownloader-mc && ./gradlew :1.21.1-neoforge:build
-./gradlew :1.21.1-neoforge:runClient
+cd worlddownloader-mc && ./gradlew :26.2-neoforge:build
+./gradlew :26.2-neoforge:runClient
 ```
-Expected: BUILD SUCCESSFUL. In-game, verify the same three conditions as Task 2 Step 6 on NeoForge 1.21.1. Then run the full proof: `./gradlew :1.8.9-forge:build :1.20.1-fabric:build :1.21.1-neoforge:build` → all three SUCCESSFUL.
+Expected: BUILD SUCCESSFUL. In-game, verify the same three conditions as Task 2 Step 6 on NeoForge / MC 26.2. Then run the full proof (modern anchors on the root Gradle 9.5.1 wrapper; the 1.8.9 anchor on its own ForgeGradle-2 Gradle per Global Constraints):
+```bash
+./gradlew :1.20.1-fabric:build :26.2-neoforge:build   # modern, root wrapper
+# 1.8.9-forge built via its own legacy Gradle invocation (Task 3)
+```
+All three anchors SUCCESSFUL = A's definition of done met.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add -A worlddownloader-mc
-git commit -m "feat(mc): add 1.21.1-neoforge anchor from shared source"
+git commit -m "feat(mc): add newest 26.2-neoforge anchor from shared source"
 ```
 
 ---
@@ -598,7 +612,7 @@ Locks in the remaining anchors as declared-not-built rows and writes the one doc
 
 - [ ] **Step 1: Verify the matrix is complete**
 
-Confirm `versions.gradle.kts` contains all rows from the Global Constraints (1.7.10, 1.8.9, 1.12.2, 1.16.5, 1.18.2, 1.20.1, 1.21.1, plus a quilt row). Add any missing row using the same `Anchor(...)` shape with `build = false`.
+Confirm `versions.gradle.kts` contains all rows from the Global Constraints (1.7.10, 1.8.9, 1.12.2, 1.16.5, 1.18.2, 1.20.1, 1.21.1, 26.1, 26.2, plus quilt rows). Add any missing row using the same `Anchor(...)` shape with `build = false`.
 
 - [ ] **Step 2: Write the skeleton README**
 
@@ -609,12 +623,12 @@ Confirm `versions.gradle.kts` contains all rows from the Global Constraints (1.7
 Multiloader / multiversion skeleton (sub-project A). Package root `dev.shedux.worlddownloader`.
 
 ## Buckets
-- Legacy (ForgeGradle 2): 1.7.10, 1.8.9, 1.12.2 — Forge (+ Legacy Fabric later).
-- Modern (Architectury Loom): 1.16.5, 1.18.2, 1.20.1, 1.21.x — Forge, Fabric, NeoForge, Quilt.
+- Legacy (ForgeGradle 2, own Gradle): 1.7.10, 1.8.9, 1.12.2 — Forge (+ Legacy Fabric later).
+- Modern (Architectury Loom, Gradle 9.5.1): 1.16.5, 1.18.2, 1.20.1, 1.21.1, 26.1, 26.2 (newest) — Forge, Fabric, NeoForge, Quilt. Matrix is open-ended; new releases are new rows.
 
 ## Built anchors (A proof)
-- `1.8.9-forge`, `1.20.1-fabric`, `1.21.1-neoforge`.
-Build all: `./gradlew :1.8.9-forge:build :1.20.1-fabric:build :1.21.1-neoforge:build`
+- `1.8.9-forge`, `1.20.1-fabric`, `26.2-neoforge` (newest).
+Build modern: `./gradlew :1.20.1-fabric:build :26.2-neoforge:build` — legacy `1.8.9-forge` builds via its own Gradle (see Task 3).
 
 ## Shared source
 Lives in `src/`. The ReplayMod preprocessor fans it out per anchor via `//#if MC>=…` / loader guards.
@@ -653,7 +667,7 @@ git commit -m "docs(mc): document skeleton + declare remaining matrix rows"
 - Two buckets, anchor lists → Task 1 matrix + Task 6. ✓
 - Toolchain (preprocessor + Loom/ForgeGradle hybrid) → Tasks 2 (Loom), 3 (ForgeGradle 2), 4 (preprocessor). ✓
 - Repo layout (`src/` shared, `versions/`, `platform/` shims) → Tasks 1, 4. `platform/` shims: not needed at A's shell scope (loader differences handled by `//#if` guards in the tiny entrypoint) — deferred to B when real logic needs abstraction. Noted, not a gap.
-- DoD: 3 anchors build (`1.8.9-forge`, `1.20.1-fabric`, `1.21.1-neoforge`) → Task 5 Step 4 full proof. ✓
+- DoD: 3 anchors build (`1.8.9-forge`, `1.20.1-fabric`, `26.2-neoforge`) → Task 5 Step 4 full proof. ✓
 - DoD: `/wdl` + rebindable hotkey open empty panel → Tasks 2/3/5 entrypoints + verify steps. ✓
 - DoD: remaining anchors declared as rows → Tasks 1 + 6. ✓
 - Out of scope (download logic, UI styling, anti-fingerprint) → nothing in A touches them; screens are empty shells. ✓
