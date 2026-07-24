@@ -17,3 +17,14 @@ tasks.register("matrixCheck") {
         println("proof ids present in matrix: ok")
     }
 }
+
+tasks.register("matrixList") {
+    doLast {
+        val byLoader = allRows.groupBy { it.substringAfterLast('-') }
+        byLoader.toSortedMap().forEach { (loader, rows) ->
+            println("=== $loader (${rows.size}) ===")
+            println(rows.joinToString(" ") { it.substringBeforeLast('-') })
+        }
+        println("TOTAL: ${allRows.size} (version x loader) build targets")
+    }
+}

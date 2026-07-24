@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "worlddownloader",
+  "version": "0.0.1",
+  "name": "WorldDownloader",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      { "adapter": "kotlin", "value": "dev.shedux.worlddownloader.WorldDownloaderMod" }
+    ]
+  },
+  "depends": {
+    "fabric-language-kotlin": "*"
+  }
+}

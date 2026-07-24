@@ -1,0 +1,8 @@
+[
+  {
+    "modid": "worlddownloader",
+    "name": "WorldDownloader",
+    "version": "0.0.1",
+    "description": "Download server areas as world / schematic / litematic."
+  }
+]
