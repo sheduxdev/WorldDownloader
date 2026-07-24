@@ -2,7 +2,12 @@ package dev.shedux.worlddownloader.ui
 
 import net.minecraft.client.gui.GuiScreen
 
-// A: intentionally empty shell. shadcn-zinc styling is sub-project D.
 class EmptyPanelScreen : GuiScreen() {
-    override fun doesGuiPauseGame(): Boolean = false
+    override fun doesGuiPauseGame() = false
+
+    override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
+        drawDefaultBackground()
+        drawCenteredString(fontRendererObj, "WorldDownloader", width / 2, height / 2 - 4, 0xFFFFFF)
+        super.drawScreen(mouseX, mouseY, partialTicks)
+    }
 }
