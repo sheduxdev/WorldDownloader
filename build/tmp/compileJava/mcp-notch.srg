@@ -1,0 +1,3 @@
+FD: dev/desco/worlddownloader/mixins/ChunkProviderClientMixin/blankChunk dev/desco/worlddownloader/mixins/ChunkProviderClientMixin/b
+FD: dev/desco/worlddownloader/mixins/ChunkProviderClientMixin/chunkListing dev/desco/worlddownloader/mixins/ChunkProviderClientMixin/d
+MD: dev/desco/worlddownloader/mixins/WorldMixin/getWorldInfo ()Lnet/minecraft/world/storage/WorldInfo; dev/desco/worlddownloader/mixins/WorldMixin/P ()Lato;

@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+ModSide: CLIENT
+MixinConfigs: worlddownloader.mixins.json
+TweakClass: gg.essential.loader.stage0.EssentialSetupTweaker
+ForceLoadAsMod: true
+

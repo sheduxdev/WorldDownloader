@@ -1,0 +1,12 @@
+dev/desco/worlddownloader/mixins/accessors/NBTBaseAccessor.java
+ dev.desco.worlddownloader.mixins.accessors.NBTBaseAccessor
+dev/desco/worlddownloader/mixins/WorldMixin.java
+ dev.desco.worlddownloader.mixins.WorldMixin
+dev/desco/worlddownloader/mixins/ChunkProviderClientMixin.java
+ dev.desco.worlddownloader.mixins.ChunkProviderClientMixin
+dev/desco/worlddownloader/mixins/WorldServerMixin.java
+ dev.desco.worlddownloader.mixins.WorldServerMixin
+dev/desco/worlddownloader/mixins/WorldInfoMixin.java
+ dev.desco.worlddownloader.mixins.WorldInfoMixin
+dev/desco/worlddownloader/mixins/EnumChatFormattingMixin.java
+ dev.desco.worlddownloader.mixins.EnumChatFormattingMixin

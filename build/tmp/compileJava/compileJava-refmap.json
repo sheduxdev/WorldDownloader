@@ -1,0 +1,85 @@
+{
+  "mappings": {
+    "dev/desco/worlddownloader/mixins/WorldInfoMixin": {
+      "updateTagCompound": "Lnet/minecraft/world/storage/WorldInfo;func_76064_a(Lnet/minecraft/nbt/NBTTagCompound;Lnet/minecraft/nbt/NBTTagCompound;)V",
+      "<init>(Lnet/minecraft/nbt/NBTTagCompound;)V": "Lnet/minecraft/world/storage/WorldInfo;<init>(Lnet/minecraft/nbt/NBTTagCompound;)V"
+    },
+    "dev/desco/worlddownloader/mixins/WorldMixin": {
+      "setBlockState(Lnet/minecraft/util/BlockPos;Lnet/minecraft/block/state/IBlockState;I)Z": "Lnet/minecraft/world/World;func_180501_a(Lnet/minecraft/util/BlockPos;Lnet/minecraft/block/state/IBlockState;I)Z",
+      "Lnet/minecraft/entity/Entity;updateRidden()V": "Lnet/minecraft/entity/Entity;func_70098_U()V",
+      "Lnet/minecraft/entity/Entity;onUpdate()V": "Lnet/minecraft/entity/Entity;func_70071_h_()V",
+      "updateEntities": "Lnet/minecraft/world/World;func_72939_s()V",
+      "updateEntityWithOptionalForce": "Lnet/minecraft/world/World;func_72866_a(Lnet/minecraft/entity/Entity;Z)V"
+    },
+    "dev/desco/worlddownloader/mixins/WorldServerMixin": {
+      "updateBlocks": "Lnet/minecraft/world/WorldServer;func_147456_g()V"
+    },
+    "dev/desco/worlddownloader/mixins/accessors/NBTBaseAccessor": {
+      "write": "func_74734_a(Ljava/io/DataOutput;)V"
+    },
+    "dev/desco/worlddownloader/mixins/ChunkProviderClientMixin": {
+      "loadChunk": "Lnet/minecraft/client/multiplayer/ChunkProviderClient;func_73158_c(II)Lnet/minecraft/world/chunk/Chunk;",
+      "unloadChunk": "Lnet/minecraft/client/multiplayer/ChunkProviderClient;func_73234_b(II)V",
+      "provideChunk(Lnet/minecraft/util/BlockPos;)Lnet/minecraft/world/chunk/Chunk;": "Lnet/minecraft/client/multiplayer/ChunkProviderClient;func_177459_a(Lnet/minecraft/util/BlockPos;)Lnet/minecraft/world/chunk/Chunk;"
+    },
+    "dev/desco/worlddownloader/mixins/EnumChatFormattingMixin": {
+      "func_175744_a": "Lnet/minecraft/util/EnumChatFormatting;func_175744_a(I)Lnet/minecraft/util/EnumChatFormatting;"
+    }
+  },
+  "data": {
+    "notch": {
+      "dev/desco/worlddownloader/mixins/WorldInfoMixin": {
+        "updateTagCompound": "Lato;a(Ldn;Ldn;)V",
+        "<init>(Lnet/minecraft/nbt/NBTTagCompound;)V": "Lato;<init>(Ldn;)V"
+      },
+      "dev/desco/worlddownloader/mixins/WorldMixin": {
+        "setBlockState(Lnet/minecraft/util/BlockPos;Lnet/minecraft/block/state/IBlockState;I)Z": "Ladm;a(Lcj;Lalz;I)Z",
+        "Lnet/minecraft/entity/Entity;updateRidden()V": "Lpk;ak()V",
+        "Lnet/minecraft/entity/Entity;onUpdate()V": "Lpk;t_()V",
+        "updateEntities": "Ladm;i()V",
+        "updateEntityWithOptionalForce": "Ladm;a(Lpk;Z)V"
+      },
+      "dev/desco/worlddownloader/mixins/WorldServerMixin": {
+        "updateBlocks": "Lle;h()V"
+      },
+      "dev/desco/worlddownloader/mixins/accessors/NBTBaseAccessor": {
+        "write": "a(Ljava/io/DataOutput;)V"
+      },
+      "dev/desco/worlddownloader/mixins/ChunkProviderClientMixin": {
+        "loadChunk": "Lbcz;c(II)Lamy;",
+        "unloadChunk": "Lbcz;b(II)V",
+        "provideChunk(Lnet/minecraft/util/BlockPos;)Lnet/minecraft/world/chunk/Chunk;": "Lbcz;a(Lcj;)Lamy;"
+      },
+      "dev/desco/worlddownloader/mixins/EnumChatFormattingMixin": {
+        "func_175744_a": "La;a(I)La;"
+      }
+    },
+    "searge": {
+      "dev/desco/worlddownloader/mixins/WorldInfoMixin": {
+        "updateTagCompound": "Lnet/minecraft/world/storage/WorldInfo;func_76064_a(Lnet/minecraft/nbt/NBTTagCompound;Lnet/minecraft/nbt/NBTTagCompound;)V",
+        "<init>(Lnet/minecraft/nbt/NBTTagCompound;)V": "Lnet/minecraft/world/storage/WorldInfo;<init>(Lnet/minecraft/nbt/NBTTagCompound;)V"
+      },
+      "dev/desco/worlddownloader/mixins/WorldMixin": {
+        "setBlockState(Lnet/minecraft/util/BlockPos;Lnet/minecraft/block/state/IBlockState;I)Z": "Lnet/minecraft/world/World;func_180501_a(Lnet/minecraft/util/BlockPos;Lnet/minecraft/block/state/IBlockState;I)Z",
+        "Lnet/minecraft/entity/Entity;updateRidden()V": "Lnet/minecraft/entity/Entity;func_70098_U()V",
+        "Lnet/minecraft/entity/Entity;onUpdate()V": "Lnet/minecraft/entity/Entity;func_70071_h_()V",
+        "updateEntities": "Lnet/minecraft/world/World;func_72939_s()V",
+        "updateEntityWithOptionalForce": "Lnet/minecraft/world/World;func_72866_a(Lnet/minecraft/entity/Entity;Z)V"
+      },
+      "dev/desco/worlddownloader/mixins/WorldServerMixin": {
+        "updateBlocks": "Lnet/minecraft/world/WorldServer;func_147456_g()V"
+      },
+      "dev/desco/worlddownloader/mixins/accessors/NBTBaseAccessor": {
+        "write": "func_74734_a(Ljava/io/DataOutput;)V"
+      },
+      "dev/desco/worlddownloader/mixins/ChunkProviderClientMixin": {
+        "loadChunk": "Lnet/minecraft/client/multiplayer/ChunkProviderClient;func_73158_c(II)Lnet/minecraft/world/chunk/Chunk;",
+        "unloadChunk": "Lnet/minecraft/client/multiplayer/ChunkProviderClient;func_73234_b(II)V",
+        "provideChunk(Lnet/minecraft/util/BlockPos;)Lnet/minecraft/world/chunk/Chunk;": "Lnet/minecraft/client/multiplayer/ChunkProviderClient;func_177459_a(Lnet/minecraft/util/BlockPos;)Lnet/minecraft/world/chunk/Chunk;"
+      },
+      "dev/desco/worlddownloader/mixins/EnumChatFormattingMixin": {
+        "func_175744_a": "Lnet/minecraft/util/EnumChatFormatting;func_175744_a(I)Lnet/minecraft/util/EnumChatFormatting;"
+      }
+    }
+  }
+}

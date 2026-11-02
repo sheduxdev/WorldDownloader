@@ -13,7 +13,7 @@ pluginManagement {
 rootProject.name = "worlddownloader-mc"
 
 // The 3 build-proof anchors. Full ~200-row matrix lives in versions.gradle.kts; rest flipped on later.
-listOf("1.8.9-forge", "1.20.1-fabric", "26.2-neoforge").forEach { id ->
+listOf("1.8.9-forge").forEach { id ->
     include(":$id")
     project(":$id").projectDir = file("versions/$id")
 }
